@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { registerUser, loginUser } from "../api/axios";
+import { registerUser, loginUser, addJournal } from "../api/axios";
 
 const UserContext = createContext();
 
@@ -10,11 +10,19 @@ const UserProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      await registerUser(userInput);
-      return true;
+      const data = await registerUser(userInput);
+
+      return {
+        success: true,
+        data
+      };
     } catch (err) {
       console.error("Registration failed", err);
-      return false;
+
+      return {
+        success: false,
+        message: err.response?.data?.message || "Registration failed"
+      };
     } finally {
       setLoading(false);
     }
@@ -28,10 +36,39 @@ const UserProvider = ({ children }) => {
 
       localStorage.setItem("token", response.data.token);
 
-      return true;
+      return {
+        success: true,
+        data: response.data
+      };
     } catch (err) {
       console.error("Login failed", err);
-      return false;
+
+      return {
+        success: false,
+        message: err.response?.data?.message || "Login failed"
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJournalEntry = async (journalData) => {
+    setLoading(true);
+
+    try {
+      const data = await addJournal(journalData);
+
+      return {
+        success: true,
+        data
+      };
+    } catch (err) {
+      console.error("Add journal failed", err);
+
+      return {
+        success: false,
+        message: err.response?.data?.message || "Add journal failed"
+      };
     } finally {
       setLoading(false);
     }
@@ -42,6 +79,7 @@ const UserProvider = ({ children }) => {
       value={{
         handleRegister,
         handleLogin,
+        handleJournalEntry,
         loading
       }}
     >
